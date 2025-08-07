@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charaset="UTF-8">
+    <meta name="viewport" content="width = device-width, initial-scale = 1.0">
+    <title>03 - First Three.js Project</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .webgl-container {
+            flex: 1;
+            position: relative;
+        }
+
+        .webgl {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .ui-container {
+            width: 300px;
+            background-color: #f0f0f0;
+            border-left: 2px solid #ccc;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        .ui-canvas {
+            width: 100%;
+            height: 300px;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            background-color: white;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+
+        .ui-controls {
+            margin-bottom: 20px;
+        }
+
+        .ui-controls h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+
+        .control-group input[type="color"] {
+            width: 60px;
+            height: 30px;
+            border: none;
+            border-radius: 4px;
+        }
+
+        .control-group button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .control-group button:hover {
+            background-color: #0056b3;
+        }
+
+        .branch-properties {
+            background-color: #f8f9fa;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .branch-properties h3 {
+            color: #007bff;
+            margin-top: 0;
+        }
+
+        .branch-properties p {
+            margin: 5px 0;
+            font-family: monospace;
+            background-color: #e9ecef;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .grape-controls {
+            background-color: #e8f5e8;
+            border: 1px solid #28a745;
+            border-radius: 6px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        .grape-controls h4 {
+            color: #28a745;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        .grape-toggle {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            border: 2px solid #ddd;
+            border-radius: 15px;
+            background-color: #ccc;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            outline: none;
+            font-size: 0;
+            /* テキストを非表示 */
+        }
+
+        .grape-toggle::before {
+            content: '';
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background-color: white;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .grape-toggle.active {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+
+        .grape-toggle.active::before {
+            transform: translateX(30px);
+        }
+
+        .grape-toggle:hover {
+            opacity: 0.8;
+        }
+
+        .grape-control-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 8px 0;
+        }
+
+        .grape-control-row label {
+            font-weight: bold;
+            color: #28a745;
+            min-width: 50px;
+        }
+
+        /* 回転コントロールのスタイル */
+        .rotation-control {
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .rotation-display {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border: 2px solid #007bff;
+            border-radius: 50%;
+            margin: 10px auto;
+            background: linear-gradient(45deg, #f8f9fa 50%, #e9ecef 50%);
+        }
+
+        .rotation-indicator {
+            position: absolute;
+            top: 5px;
+            left: 50%;
+            width: 3px;
+            height: 30px;
+            background-color: #dc3545;
+            border-radius: 2px;
+            transform: translateX(-50%);
+            transform-origin: center 35px;
+            transition: transform 0.3s ease;
+        }
+
+        .rotation-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background-color: #007bff;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .rotation-buttons {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .rotation-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            min-width: 65px;
+        }
+
+        .rotation-btn:hover {
+            background-color: #0056b3;
+        }
+
+        #rotationValue {
+            font-weight: bold;
+            color: #333;
+            min-width: 35px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="webgl-container">
+            <canvas class="webgl"></canvas>
+        </div>
+        <div class="ui-container">
+            <h3>Grape Position Monitor</h3>
+            <canvas class="ui-canvas" id="uiCanvas"></canvas>
+            
+            <!-- CSV出力ボタン -->
+            <div class="control-group" style="margin-top: 10px;">
+                <button id="exportCsv" style="background-color: #28a745; width: 100%;">Export Grape Positions to CSV</button>
+            </div>
+
+            <div class="ui-controls" style="display: none;">
+                <h3>Controls</h3>
+
+                <div class="control-group">
+                    <label for="baseRadius">Base Radius: <span id="baseRadiusValue">6</span></label>
+                    <input type="range" id="baseRadius" min="1" max="10" value="6" step="0.1">
+                </div>
+
+                <div class="control-group">
+                    <label for="stemRadius">Stem Radius: <span id="stemRadiusValue">0.7</span></label>
+                    <input type="range" id="stemRadius" min="0.1" max="2" value="0.7" step="0.1">
+                </div>
+
+                <div class="control-group">
+                    <label for="stemHeight">Stem Height: <span id="stemHeightValue">19</span></label>
+                    <input type="range" id="stemHeight" min="5" max="30" value="19" step="1">
+                </div>
+
+                <div class="control-group">
+                    <label for="materialColor">Material Color:</label>
+                    <input type="color" id="materialColor" value="#dddddd">
+                </div>
+
+                <div class="control-group">
+                    <button id="resetCamera">Reset Camera</button>
+                </div>
+            </div>
+
+            <!-- BranchBase プロパティパネル -->
+            <div class="branch-properties" id="branchProperties" style="display: none;">
+                <h3>Branch Base Properties</h3>
+
+                <div class="control-group">
+                    <p><strong>Position:</strong></p>
+                    <p id="branchPosition">-</p>
+                </div>
+
+                <div class="control-group">
+                    <p><strong>Axis:</strong></p>
+                    <p id="branchAxis">-</p>
+                </div>
+
+                <!-- ブランチ回転コントロール -->
+                <div class="control-group">
+                    <p><strong>Branch Rotation:</strong></p>
+                    <div class="rotation-control">
+                        <div class="rotation-display" id="rotationDisplay">
+                            <div class="rotation-indicator" id="rotationIndicator"></div>
+                            <div class="rotation-center"></div>
+                        </div>
+                        <div class="rotation-buttons">
+                            <button id="rotateLeft" class="rotation-btn">-60</button>
+                            <span id="rotationValue">0°</span>
+                            <button id="rotateRight" class="rotation-btn">+60</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <button id="growBranch" style="background-color: #28a745;">Grow Branch</button>
+                    <button id="removeBranch" style="background-color: #dc3545; display: none;">Remove Branch</button>
+                </div>
+
+                <div class="control-group">
+                    <button id="closeBranchProperties">Close</button>
+                </div>
+            </div> <!-- ブドウ制御セクション -->
+            <div class="grape-controls" id="grapeControls" style="display: none;">
+                <h4>Grape Controls</h4>
+
+                <div class="grape-control-row">
+                    <label>Pin 1:</label>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <button id="toggleGrape0" class="grape-toggle" aria-label="Toggle grape on pin 1"></button>
+                        <select id="grapeSize0" style="width: 80px; font-size: 12px;">
+                            <option value="1">1.0</option>
+                            <option value="1.5">1.5</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grape-control-row">
+                    <label>Pin 2:</label>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <button id="toggleGrape1" class="grape-toggle" aria-label="Toggle grape on pin 2"></button>
+                        <select id="grapeSize1" style="width: 80px; font-size: 12px;">
+                            <option value="1">1.0</option>
+                            <option value="1.5">1.5</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grape-control-row">
+                    <label>Pin 3:</label>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <button id="toggleGrape2" class="grape-toggle" aria-label="Toggle grape on pin 3"></button>
+                        <select id="grapeSize2" style="width: 80px; font-size: 12px;">
+                            <option value="1">1.0</option>
+                            <option value="1.5">1.5</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <button id="showAllGrapes" style="background-color: #17a2b8;">Show All</button>
+                    <button id="hideAllGrapes" style="background-color: #6c757d;">Hide All</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    </div>
+
+    <!--<script src = "three.min.js"></script>-->
+    <script type="module" src="TrackballControls.js"></script>
+    <script type="module" src="OrbitControls.js"></script>
+    <script type="module" src="OutlineEffect.js"></script>
+
+    <script type="module" src="./script.js"></script>
+</body>
+
+</html>
