@@ -652,7 +652,13 @@ export class UIControlManager {
      * BranchBaseプロパティパネルを表示
      */
     showBranchProperties(branchBase) {
+        // 直前に選択されていたBranchBaseのハイライトを解除
+        if (this.selectedBranchBase && this.selectedBranchBase !== branchBase) {
+            this.selectedBranchBase.setSelected(false);
+        }
+
         this.selectedBranchBase = branchBase;
+        this.selectedBranchBase.setSelected(true);
 
         // 位置と軸の情報を表示
         const position = branchBase.point;
@@ -689,6 +695,10 @@ export class UIControlManager {
      * BranchBaseプロパティパネルを非表示
      */
     closeBranchProperties() {
+        if (this.selectedBranchBase) {
+            this.selectedBranchBase.setSelected(false);
+        }
+
         this.selectedBranchBase = null;
         this.branchPropertiesPanel.style.display = 'none';
         this.grapeControlsPanel.style.display = 'none';

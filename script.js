@@ -240,6 +240,9 @@ uiControlManager.on('exportCsv', () => {
 
 // branch Basesを更新する関数
 function updateBranchBases(stemRadius, stemHeight) {
+    // 既存の選択状態を解除してからBranchBaseを再生成する
+    uiControlManager.closeBranchProperties();
+
     // 既存のbranch Basesを削除
     branchBases.forEach(branchBase => {
         scene.remove(branchBase.mesh);

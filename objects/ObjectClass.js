@@ -2,6 +2,9 @@ import * as THREE from 'three';
 import { createJunctionObject } from './JunctionObject.js';
 import { createOutlinedCylinderMesh, replaceMeshEdges } from '../factories/MeshFactory.js';
 import { applyAxisRotationToMesh } from '../utils/TransformUtils.js';
+
+const SELECTED_BRANCH_COLOR = 0x4DABF7;
+
 export class BranchBase {
     constructor(point, axes, radius = 0.3, height = 0.05, color = 0xFFCE7B) {
         this.point = point;
@@ -69,6 +72,20 @@ export class BranchBase {
     applyRotationToMesh(mesh) {
         applyAxisRotationToMesh(mesh, this.point, this.axes, this.height, this.rotation);
     }
+
+    // 選択状態に応じてBranchBaseと生えているBranchの色を変更
+    setSelected(isSelected) {
+        this.setMeshColor(isSelected ? SELECTED_BRANCH_COLOR : this.color);
+
+        if (this.hasBranch && this.branch) {
+            this.branch.setSelected(isSelected);
+        }
+    }
+
+    // BranchBase本体の色を更新
+    setMeshColor(color) {
+        this.mesh.material.color.setHex(color);
+    }
 }
 
 export class Branch {
@@ -119,6 +136,16 @@ export class Branch {
     // axes軸周りの回転をメッシュに適用（BranchBaseと同じロジック）
     applyRotationToMesh(mesh) {
         applyAxisRotationToMesh(mesh, this.point, this.axes, this.height, this.rotation);
+    }
+
+    // 選択状態に応じてBranch本体の色を変更
+    setSelected(isSelected) {
+        this.setMeshColor(isSelected ? SELECTED_BRANCH_COLOR : this.color);
+    }
+
+    // Branch本体と子要素の色を更新
+    setMeshColor(color) {
+        setMeshTreeColor(this.mesh, color);
     }
 
     initializePinsAndGrapes() {
@@ -304,5 +331,27 @@ export class grapes {
         this.mesh.position.copy(this.position);
 
         console.log(`Grape size: ${this.radius}, position Y: ${newY}`);
+    }
+}
+
+// 指定オブジェクト配下のMeshだけを再帰的に色変更する
+// LineSegmentsの輪郭線はMeshではないため、黒いエッジはそのまま残る
+function setMeshTreeColor(object, color) {
+    if (object instanceof THREE.Mesh) {
+        setMaterialColor(object.material, color);
+    }
+
+    object.children.forEach(child => setMeshTreeColor(child, color));
+}
+
+// 単体または配列形式のmaterialに対応して色を更新する
+function setMaterialColor(material, color) {
+    if (Array.isArray(material)) {
+        material.forEach(item => setMaterialColor(item, color));
+        return;
+    }
+
+    if (material && material.color) {
+        material.color.setHex(color);
     }
 }

@@ -214,13 +214,7 @@ export class ClickBranchBaseControls {
      * 強調表示用の機能（オプション）
      */
     highlightBranchBase(branchBase, highlight = true) {
-        if (highlight) {
-            // BranchBaseを強調表示
-            branchBase.mesh.material.emissive.setHex(0x444444);
-        } else {
-            // 強調表示を解除
-            branchBase.mesh.material.emissive.setHex(0x000000);
-        }
+        branchBase.setSelected(highlight);
     }
 
     /**
