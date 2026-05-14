@@ -1,10 +1,10 @@
 import * as THREE from 'three';
 import { OrbitControls } from './OrbitControls.js';
-import { createHexagonalPrism, createHexagonalPrismSimple, createAxisHelper, createSimpleAxisHelper } from './hex.js';
+import { createAxisHelper } from './AxisHelperFactory.js';
+import { createHexagonalPrism } from './HexagonalPrismFactory.js';
 import { UICanvas, UIControlManager } from './uiCanvas.js';
 import { BranchGenerator } from './BranchGenerator.js';
 import { ClickBranchBaseControls } from './ClickBranchBaseControls.js';
-import { Branch } from './ObjectClass.js';
 //import { createJunctionObject } from './JunctionObject.js';
 //window.addEventListener('load', init);
 const canvas = document.querySelector('canvas.webgl');
@@ -26,8 +26,8 @@ const material = new THREE.MeshBasicMaterial({
 const baseCenter = new THREE.Vector3(0, 0, 0);
 const stemCenter = new THREE.Vector3(0, 1, 0);
 // 六角柱を作成（外接円半径6、高さ1）
-let base = createHexagonalPrismSimple(baseCenter, 6, 1, material);
-let stem = createHexagonalPrismSimple(stemCenter, 0.7, 19, material);
+let base = createHexagonalPrism(baseCenter, 6, 1, material);
+let stem = createHexagonalPrism(stemCenter, 0.7, 19, material);
 scene.add(base);
 scene.add(stem);
 const branchBases = [];
@@ -118,7 +118,7 @@ uiControlManager.on('baseRadiusChange', (value) => {
     scene.remove(base);
 
     // 新しいbaseオブジェクトを作成
-    base = createHexagonalPrismSimple(baseCenter, value, 1, material);
+    base = createHexagonalPrism(baseCenter, value, 1, material);
     scene.add(base);
 });
 
@@ -130,7 +130,7 @@ uiControlManager.on('stemRadiusChange', (value) => {
     const currentStemHeight = parseFloat(document.getElementById('stemHeight').value);
 
     // 新しいstemオブジェクトを作成
-    stem = createHexagonalPrismSimple(stemCenter, value, currentStemHeight, material);
+    stem = createHexagonalPrism(stemCenter, value, currentStemHeight, material);
     scene.add(stem);
 
     // branch Basesも更新
@@ -145,7 +145,7 @@ uiControlManager.on('stemHeightChange', (value) => {
     const currentStemRadius = parseFloat(document.getElementById('stemRadius').value);
 
     // 新しいstemオブジェクトを作成
-    stem = createHexagonalPrismSimple(stemCenter, currentStemRadius, value, material);
+    stem = createHexagonalPrism(stemCenter, currentStemRadius, value, material);
     scene.add(stem);
 
     // branch Basesも更新
@@ -323,4 +323,3 @@ animate();
 //     mesh.rotation.x += 0.01;
 //     renderer.render(scene, camera);
 // }
-

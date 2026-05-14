@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { BranchHitTester } from './BranchHitTester.js';
 
 /**
  * BranchBaseのクリック制御クラス
@@ -15,6 +16,7 @@ export class ClickBranchBaseControls {
 
         this.raycaster = new THREE.Raycaster();
         this.mouse = new THREE.Vector2();
+        this.hitTester = new BranchHitTester(branchBases);
 
         this.isAnimating = false;
         this.animationDuration = 1000; // アニメーション時間（ミリ秒）
@@ -52,33 +54,8 @@ export class ClickBranchBaseControls {
         console.log('Mouse coordinates:', this.mouse.x, this.mouse.y);
 
         // レイキャスティング
-        this.raycaster.setFromCamera(this.mouse, this.camera);        // BranchBaseのメッシュを取得
-        const branchMeshes = this.branchBases.map(branchBase => branchBase.mesh);
-        console.log('Branch meshes count:', branchMeshes.length);
-
-        // 生えているブランチのメッシュも取得
-        const allBranchMeshes = [];
-        this.branchBases.forEach(branchBase => {
-            if (branchBase.hasBranch && branchBase.branch) {
-                allBranchMeshes.push(branchBase.branch.mesh);
-            }
-        });
-
-        // すべての子オブジェクトも含めてレイキャスティング（再帰的に取得）
-        const allObjects = [];
-
-        // BranchBaseのメッシュとその子オブジェクト
-        branchMeshes.forEach(mesh => {
-            allObjects.push(mesh);
-            this.addChildrenRecursively(mesh, allObjects);
-        });
-
-        // ブランチのメッシュとその子オブジェクト
-        allBranchMeshes.forEach(mesh => {
-            allObjects.push(mesh);
-            this.addChildrenRecursively(mesh, allObjects);
-        });
-
+        this.raycaster.setFromCamera(this.mouse, this.camera);
+        const allObjects = this.hitTester.getClickableObjects();
         const intersects = this.raycaster.intersectObjects(allObjects);
         console.log('Intersects count:', intersects.length);
 
@@ -86,46 +63,7 @@ export class ClickBranchBaseControls {
             const clickedObject = intersects[0].object;
             console.log('Clicked object:', clickedObject);
 
-            // クリックされたオブジェクトまたはその親がBranchBaseのメッシュかどうかを判定
-            let targetMesh = null;
-            let clickedBranchBase = null;
-
-            // まずBranchBaseをチェック
-            if (branchMeshes.includes(clickedObject)) {
-                targetMesh = clickedObject;
-                clickedBranchBase = this.branchBases.find(branchBase => branchBase.mesh === targetMesh);
-            } else if (clickedObject.parent && branchMeshes.includes(clickedObject.parent)) {
-                targetMesh = clickedObject.parent;
-                clickedBranchBase = this.branchBases.find(branchBase => branchBase.mesh === targetMesh);
-            }
-            // 次にブランチをチェック
-            else if (allBranchMeshes.includes(clickedObject)) {
-                targetMesh = clickedObject;
-                clickedBranchBase = this.branchBases.find(branchBase => branchBase.branch && branchBase.branch.mesh === targetMesh);
-            } else if (clickedObject.parent && allBranchMeshes.includes(clickedObject.parent)) {
-                targetMesh = clickedObject.parent;
-                clickedBranchBase = this.branchBases.find(branchBase => branchBase.branch && branchBase.branch.mesh === targetMesh);
-            }
-            // ブランチの子要素（ジャンクションオブジェクトなど）がクリックされた場合
-            else {
-                // 親を辿ってブランチメッシュを探す
-                let currentObject = clickedObject;
-                while (currentObject.parent) {
-                    currentObject = currentObject.parent;
-                    if (allBranchMeshes.includes(currentObject)) {
-                        targetMesh = currentObject;
-                        clickedBranchBase = this.branchBases.find(branchBase => branchBase.branch && branchBase.branch.mesh === targetMesh);
-                        break;
-                    }
-                    if (branchMeshes.includes(currentObject)) {
-                        targetMesh = currentObject;
-                        clickedBranchBase = this.branchBases.find(branchBase => branchBase.mesh === targetMesh);
-                        break;
-                    }
-                }
-            }
-
-            console.log('Target mesh:', targetMesh);
+            const clickedBranchBase = this.hitTester.findBranchBaseForObject(clickedObject);
             console.log('Found branch base:', clickedBranchBase);
 
             if (clickedBranchBase) {
@@ -148,33 +86,7 @@ export class ClickBranchBaseControls {
 
         // レイキャスティング
         this.raycaster.setFromCamera(this.mouse, this.camera);
-
-        // BranchBaseのメッシュを取得
-        const branchMeshes = this.branchBases.map(branchBase => branchBase.mesh);
-
-        // 生えているブランチのメッシュも取得
-        const allBranchMeshes = [];
-        this.branchBases.forEach(branchBase => {
-            if (branchBase.hasBranch && branchBase.branch) {
-                allBranchMeshes.push(branchBase.branch.mesh);
-            }
-        });
-
-        // すべての子オブジェクトも含めてレイキャスティング（再帰的に取得）
-        const allObjects = [];
-
-        // BranchBaseのメッシュとその子オブジェクト
-        branchMeshes.forEach(mesh => {
-            allObjects.push(mesh);
-            this.addChildrenRecursively(mesh, allObjects);
-        });
-
-        // ブランチのメッシュとその子オブジェクト
-        allBranchMeshes.forEach(mesh => {
-            allObjects.push(mesh);
-            this.addChildrenRecursively(mesh, allObjects);
-        });
-
+        const allObjects = this.hitTester.getClickableObjects();
         const intersects = this.raycaster.intersectObjects(allObjects);
 
         // カーソルを変更
@@ -288,6 +200,7 @@ export class ClickBranchBaseControls {
      */
     updateBranchBases(newBranchBases) {
         this.branchBases = newBranchBases;
+        this.hitTester.updateBranchBases(newBranchBases);
     }
 
     /**
@@ -295,16 +208,6 @@ export class ClickBranchBaseControls {
      */
     setUIControlManager(uiControlManager) {
         this.uiControlManager = uiControlManager;
-    }
-
-    /**
-     * 再帰的に子オブジェクトを配列に追加
-     */
-    addChildrenRecursively(object, array) {
-        object.children.forEach(child => {
-            array.push(child);
-            this.addChildrenRecursively(child, array);
-        });
     }
 
     /**

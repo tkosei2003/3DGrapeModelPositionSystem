@@ -1,11 +1,9 @@
 import * as THREE from 'three';
-import { createHexagonalPrismSimple } from './hex.js';
 import { BranchBase } from './ObjectClass.js';
 
 export class BranchGenerator {
     constructor(stemRadius = 0.7, stemHeight = 19) {
         this.branchBases = [];
-        this.material = new THREE.MeshBasicMaterial({ color: 0xFFCE7B });
         this.stemRadius = stemRadius;
         this.stemHeight = stemHeight;
     }

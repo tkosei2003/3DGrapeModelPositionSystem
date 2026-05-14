@@ -1,6 +1,7 @@
 import * as THREE from 'three';
-import { createHexagonalPrismSimple } from './hex.js';
 import { createJunctionObject } from './JunctionObject.js';
+import { createOutlinedCylinderMesh, replaceMeshEdges } from './MeshFactory.js';
+import { applyAxisRotationToMesh } from './TransformUtils.js';
 export class BranchBase {
     constructor(point, axes, radius = 0.3, height = 0.05, color = 0xFFCE7B) {
         this.point = point;
@@ -15,15 +16,7 @@ export class BranchBase {
     }
 
     createMesh() {
-        // CylinderGeometryを使用して六角柱を作成（6つのセグメントで六角形）
-        const geometry = new THREE.CylinderGeometry(this.radius, this.radius, this.height, 6);
-        const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ color: this.color }));
-
-        // エッジを追加
-        const edge = new THREE.EdgesGeometry(mesh.geometry, 0.1);
-        const edgeMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
-        const edgeMesh = new THREE.LineSegments(edge, edgeMaterial);
-        mesh.add(edgeMesh);
+        const mesh = createOutlinedCylinderMesh(this.radius, this.height, this.color);
 
         // 位置と回転を適用
         this.applyRotationToMesh(mesh);
@@ -74,43 +67,7 @@ export class BranchBase {
 
     // axes軸周りの回転をメッシュに適用
     applyRotationToMesh(mesh) {
-        // メッシュの回転をリセットして基本状態に戻す
-        mesh.rotation.set(0, 0, 0);
-        mesh.quaternion.set(0, 0, 0, 1);
-
-        // 法線軸（axes）を正規化
-        const rotationAxis = this.axes.clone().normalize();
-
-        // デフォルトのY軸から法線軸への配置回転を計算
-        const defaultUp = new THREE.Vector3(0, 1, 0);
-        let finalQuaternion = new THREE.Quaternion();
-
-        if (!defaultUp.equals(rotationAxis)) {
-            // Y軸から法線軸への配置
-            const alignmentQuaternion = new THREE.Quaternion();
-            alignmentQuaternion.setFromUnitVectors(defaultUp, rotationAxis);
-            finalQuaternion.copy(alignmentQuaternion);
-        }
-
-        // 法線軸周りの追加回転を適用
-        if (this.rotation !== 0) {
-            const rotationAngle = this.rotation * Math.PI / 180;
-
-            // 法線軸周りの回転クォータニオンを作成
-            const axisRotationQuaternion = new THREE.Quaternion();
-            axisRotationQuaternion.setFromAxisAngle(rotationAxis, rotationAngle);
-
-            // 配置回転の後に軸周り回転を適用
-            finalQuaternion.multiplyQuaternions(axisRotationQuaternion, finalQuaternion);
-        }
-
-        // 最終的なクォータニオンを適用
-        mesh.quaternion.copy(finalQuaternion);
-
-        // 位置を設定（法線方向のオフセット付き）
-        const offset = rotationAxis.clone().multiplyScalar(this.height / 2);
-        mesh.position.copy(this.point);
-        mesh.position.add(offset);
+        applyAxisRotationToMesh(mesh, this.point, this.axes, this.height, this.rotation);
     }
 }
 
@@ -129,15 +86,7 @@ export class Branch {
     }
 
     createMesh() {
-        // CylinderGeometryを使用して六角柱を作成（6つのセグメントで六角形）
-        const geometry = new THREE.CylinderGeometry(this.radius, this.radius, this.height, 6);
-        const branch = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ color: this.color }));
-
-        // エッジを追加
-        const edge = new THREE.EdgesGeometry(branch.geometry, 0.1);
-        const edgeMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
-        const edgeMesh = new THREE.LineSegments(edge, edgeMaterial);
-        branch.add(edgeMesh);
+        const branch = createOutlinedCylinderMesh(this.radius, this.height, this.color);
 
         // ジャンクションオブジェクトを作成
         const junctionPoint = new THREE.Vector3(0, this.height / 2 + 0.1, 0);
@@ -169,43 +118,7 @@ export class Branch {
 
     // axes軸周りの回転をメッシュに適用（BranchBaseと同じロジック）
     applyRotationToMesh(mesh) {
-        // メッシュの回転をリセットして基本状態に戻す
-        mesh.rotation.set(0, 0, 0);
-        mesh.quaternion.set(0, 0, 0, 1);
-
-        // 法線軸（axes）を正規化
-        const rotationAxis = this.axes.clone().normalize();
-
-        // デフォルトのY軸から法線軸への配置回転を計算
-        const defaultUp = new THREE.Vector3(0, 1, 0);
-        let finalQuaternion = new THREE.Quaternion();
-
-        if (!defaultUp.equals(rotationAxis)) {
-            // Y軸から法線軸への配置
-            const alignmentQuaternion = new THREE.Quaternion();
-            alignmentQuaternion.setFromUnitVectors(defaultUp, rotationAxis);
-            finalQuaternion.copy(alignmentQuaternion);
-        }
-
-        // 法線軸周りの追加回転を適用
-        if (this.rotation !== 0) {
-            const rotationAngle = this.rotation * Math.PI / 180;
-
-            // 法線軸周りの回転クォータニオンを作成
-            const axisRotationQuaternion = new THREE.Quaternion();
-            axisRotationQuaternion.setFromAxisAngle(rotationAxis, rotationAngle);
-
-            // 配置回転の後に軸周り回転を適用
-            finalQuaternion.multiplyQuaternions(axisRotationQuaternion, finalQuaternion);
-        }
-
-        // 最終的なクォータニオンを適用
-        mesh.quaternion.copy(finalQuaternion);
-
-        // 位置を設定（法線方向のオフセット付き）
-        const offset = rotationAxis.clone().multiplyScalar(this.height / 2);
-        mesh.position.copy(this.point);
-        mesh.position.add(offset);
+        applyAxisRotationToMesh(mesh, this.point, this.axes, this.height, this.rotation);
     }
 
     initializePinsAndGrapes() {
@@ -367,19 +280,7 @@ export class grapes {
 
     // エッジを更新
     updateEdge() {
-        // 既存のエッジを削除
-        const existingEdge = this.mesh.children.find(child => child instanceof THREE.LineSegments);
-        if (existingEdge) {
-            existingEdge.geometry.dispose();
-            existingEdge.material.dispose();
-            this.mesh.remove(existingEdge);
-        }
-
-        // 新しいエッジを作成
-        const grapeEdge = new THREE.EdgesGeometry(this.mesh.geometry);
-        const grapeEdgeMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
-        const grapeEdgeMesh = new THREE.LineSegments(grapeEdge, grapeEdgeMaterial);
-        this.mesh.add(grapeEdgeMesh);
+        replaceMeshEdges(this.mesh);
     }
 
     // サイズに応じて位置を更新
