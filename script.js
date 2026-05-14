@@ -1,11 +1,11 @@
 import * as THREE from 'three';
-import { OrbitControls } from './OrbitControls.js';
-import { createAxisHelper } from './AxisHelperFactory.js';
-import { createHexagonalPrism } from './HexagonalPrismFactory.js';
-import { UICanvas, UIControlManager } from './uiCanvas.js';
-import { BranchGenerator } from './BranchGenerator.js';
-import { ClickBranchBaseControls } from './ClickBranchBaseControls.js';
-//import { createJunctionObject } from './JunctionObject.js';
+import { OrbitControls } from './controls/OrbitControls.js';
+import { ClickBranchBaseControls } from './controls/ClickBranchBaseControls.js';
+import { createAxisHelper } from './factories/AxisHelperFactory.js';
+import { createHexagonalPrism } from './factories/HexagonalPrismFactory.js';
+import { BranchGenerator } from './objects/BranchGenerator.js';
+import { UICanvas, UIControlManager } from './ui/uiCanvas.js';
+//import { createJunctionObject } from './objects/JunctionObject.js';
 //window.addEventListener('load', init);
 const canvas = document.querySelector('canvas.webgl');
 const scene = new THREE.Scene();

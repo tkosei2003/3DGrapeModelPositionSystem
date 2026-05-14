@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { createJunctionObject } from './JunctionObject.js';
-import { createOutlinedCylinderMesh, replaceMeshEdges } from './MeshFactory.js';
-import { applyAxisRotationToMesh } from './TransformUtils.js';
+import { createOutlinedCylinderMesh, replaceMeshEdges } from '../factories/MeshFactory.js';
+import { applyAxisRotationToMesh } from '../utils/TransformUtils.js';
 export class BranchBase {
     constructor(point, axes, radius = 0.3, height = 0.05, color = 0xFFCE7B) {
         this.point = point;

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { addMeshEdges } from './MeshFactory.js';
-import { applyAxisRotationToMesh } from './TransformUtils.js';
+import { applyAxisRotationToMesh } from '../utils/TransformUtils.js';
 
 /**
  * 六角柱のメッシュを作成する関数
